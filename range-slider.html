@@ -1,0 +1,121 @@
+
+<link rel="import" href="bower_components/polymer/polymer.html">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-rc1/jquery.min.js"></script>
+<dom-module id="range-slider">
+  <template>
+    <style>
+        :host {
+            display: block;
+        }
+        .slider{
+            border: 2px solid gray;
+            height: 40px;
+            position: relative;
+            width: 100%;
+        }
+        .slider > .progress{
+            background: #b6b6b6;
+            height: 100%;
+            position: absolute;
+            width: 100%;
+        }
+        .slider > .switch{
+            background: #7C4DFF;
+            /*border: 1px solid #7C4DFF*/
+            height: 100%;
+            margin-left: -5%;
+            position: absolute;
+            width: 10%;
+        }
+        .slider > .switch:hover{
+            background: #e8345a;
+        }
+        
+    </style>
+    <div id="slider" class="slider">
+        <div id="progress" class="progress"></div>
+        <div id="switch" class="switch"></div>
+    </div>
+    <br>
+    <input type="text" value="{{currentValue}}">
+    <!-- <input type="range" > -->
+  </template>
+
+  <script>
+    Polymer({
+        //Specify the custom element
+        is: 'range-slider',
+        //JSON object containing the custom element's properties
+        properties: {
+            //Min value
+            min: {
+                type: Number,
+                value: 0,
+            },
+            //Max value
+            max: {
+                type: Number,
+                value: 100,
+            },
+            //Current Value
+            _currentValue: {
+                type: Number,
+                value: 0,
+                notify: true
+            },
+            _validRange:{
+                type: Boolean,
+                value: true
+            }
+        },
+        ready: function() {
+            //If boundaries are valid, then enable functionality
+            if(this._checkBoundaries()){
+                var self = this;                                     //Get object reference (Range-slider)
+                self._setInitialValue();                             //Set range slider min value
+                //Attach mousedown event to the slider
+                $(self.$.slider).on('mousedown',function(e){
+                    self._moveEvent(e);                              // mouve the slider when mouse is down
+                    //Attach mousemove to the slider
+                    $(this).on('mousemove',function(e){
+                        self._moveEvent(e);                          //move the slider when mouse is moved
+                    });
+                }).on('mouseup',function(e){                        //listen for mouseup event                    
+                    $(this).off('mousemove');                       //if mouse is up, then disable mousemove event
+                });
+            }else{//else show error
+                $(this.$.slider).css('border', '2px solid red');    
+            }
+        },
+        // Move event
+        _moveEvent: function(e){ 
+            var elementPosition = $(e.currentTarget).offset();          //Get elemet's offset from the window (left and top)
+            var posX = e.pageX - elementPosition.left;                  //Compute value of the range slider 
+                                                                        //e.pageX => cursor position
+                                                                        //elementPosition.left => left offset from the window
+            //Check boundaries, if bound, then move
+            if(posX >= 0 && posX <= $(e.currentTarget).outerWidth()){
+                $(this.$.progres).css('width', posX+'px');              //Move progress bar
+                $(this.$.switch).css('left', posX+'px');                //Move switch
+                //Map currentValue depending on the boundaries
+                this._mapBoundaries(Math.round((posX*100)/$(e.currentTarget).outerWidth()));
+            }
+        },
+        _mapBoundaries: function(percent){
+            //Update the currentValue based on the percent of the range 
+           this.currentValue = Math.round((this.max - this.min)*percent/100)+this.min;
+        },
+        _checkBoundaries: function(){
+            if(this.max  > this.min)
+                return this._validRange;
+            return !this._validRange;
+        },
+        _setInitialValue:function(){
+            this.currentValue = this.min;
+            $(this.$.switch).css('left', 0+'px');
+        }
+        
+    });
+  </script>
+</dom-module>
+
