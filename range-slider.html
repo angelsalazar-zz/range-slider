@@ -9,7 +9,7 @@
         }
         .slider{
             border: 2px solid gray;
-            height: 40px;
+            height: 30px;
             position: relative;
             width: 100%;
         }
@@ -38,7 +38,7 @@
     </div>
     <br>
     <input type="text" value="{{currentValue}}">
-    <!-- <input type="range" > -->
+    <!--<input type="range" >-->
   </template>
 
   <script>
@@ -58,10 +58,14 @@
                 value: 100,
             },
             //Current Value
-            _currentValue: {
+            currentValue: {
                 type: Number,
                 value: 0,
                 notify: true
+            },
+            disabled: {
+                type: Boolean,
+                value: false
             },
             _validRange:{
                 type: Boolean,
@@ -70,18 +74,18 @@
         },
         ready: function() {
             //If boundaries are valid, then enable functionality
-            if(this._checkBoundaries()){
+            if(this._checkBoundaries() && !this._isDisabled()){
                 var self = this;                                     //Get object reference (Range-slider)
                 self._setInitialValue();                             //Set range slider min value
                 //Attach mousedown event to the slider
                 $(self.$.slider).on('mousedown',function(e){
-                    self._moveEvent(e);                              // mouve the slider when mouse is down
-                    //Attach mousemove to the slider
-                    $(this).on('mousemove',function(e){
-                        self._moveEvent(e);                          //move the slider when mouse is moved
+                    self._moveEvent(e);                              // move the slider when mouse is down
+                    //Attach drag event to the slider
+                    $(this).on('drag',function(e){
+                        self._moveEvent(e);                          //move the slider when mouse is dragged
                     });
                 }).on('mouseup',function(e){                        //listen for mouseup event                    
-                    $(this).off('mousemove');                       //if mouse is up, then disable mousemove event
+                    $(this).off('drag');                            //if mouse is up, then disable drag event
                 });
             }else{//else show error
                 $(this.$.slider).css('border', '2px solid red');    
@@ -95,7 +99,6 @@
                                                                         //elementPosition.left => left offset from the window
             //Check boundaries, if bound, then move
             if(posX >= 0 && posX <= $(e.currentTarget).outerWidth()){
-                $(this.$.progres).css('width', posX+'px');              //Move progress bar
                 $(this.$.switch).css('left', posX+'px');                //Move switch
                 //Map currentValue depending on the boundaries
                 this._mapBoundaries(Math.round((posX*100)/$(e.currentTarget).outerWidth()));
@@ -113,6 +116,9 @@
         _setInitialValue:function(){
             this.currentValue = this.min;
             $(this.$.switch).css('left', 0+'px');
+        },
+        _isDisabled:function(){
+            return (this.disabled);
         }
         
     });
