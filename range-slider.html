@@ -30,15 +30,17 @@
         .slider > .switch:hover{
             background: #e8345a;
         }
-        
+        .value-wrapper{
+            padding: 10px;
+        }
     </style>
     <div id="slider" class="slider">
         <div id="progress" class="progress"></div>
         <div id="switch" class="switch"></div>
     </div>
-    <br>
-    <input type="text" value="{{currentValue}}">
-    <!--<input type="range" >-->
+    <div class="value-wrapper">
+        <label>Slider value: <span>{{currentValue}}</span></label>
+    </div>
   </template>
 
   <script>
@@ -107,6 +109,7 @@
         _mapBoundaries: function(percent){
             //Update the currentValue based on the percent of the range 
            this.currentValue = Math.round((this.max - this.min)*percent/100)+this.min;
+           //this.$.svg.updateRadius(); 
         },
         _checkBoundaries: function(){
             if(this.max  > this.min)
