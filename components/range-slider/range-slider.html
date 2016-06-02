@@ -1,0 +1,103 @@
+<link rel="import" href="bower_components/polymer/polymer.html">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-rc1/jquery.min.js"></script>
+<dom-module id="range-slider">
+  <template>
+    <style>
+        :host {
+            display: block;
+        }
+        .slider{
+            border: 2px solid gray;
+            height: 30px;
+            position: relative;
+            width: 100%;
+        }
+        .slider > .progress{
+            background: #b6b6b6;
+            height: 100%;
+            position: absolute;
+            width: 100%;
+        }
+        .slider > .switch{
+            background: #7C4DFF;
+            /*border: 1px solid #7C4DFF*/
+            height: 100%;
+            margin-left: -5%;
+            position: absolute;
+            width: 10%;
+        }
+        .slider > .switch:hover{
+            background: #e8345a;
+        }
+        .value-wrapper{
+            padding: 10px;
+        }
+    </style>
+    <div id="slider" class="slider">
+        <div id="progress" class="progress"></div>
+        <div id="switch" class="switch"></div>
+    </div>
+    <div class="value-wrapper">
+        <label>Slider value: <span>{{value}}</span></label>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+        //Specify the custom element
+        is: 'range-slider',
+        //JSON object containing the custom element's properties
+        properties: {
+            //Min value
+            min: {
+                type: Number,
+                value: 0,
+            },
+            //Max value
+            max: {
+                type: Number,
+                value: 100,
+            },
+            //Current Value
+            value: {
+                type: Number,
+                value: 0,
+                notify: true
+            }
+        },
+        observers: [
+            'valueChanged(value)'
+        
+        ],
+        listeners: {
+          'slider.down': 'handleDown',
+          'slider.track': 'handleTrack',
+        },
+        handleDown: function(e) {
+            this._moveSlider(e);
+        },
+        handleTrack: function(e){
+            this._moveSlider(e);
+        },
+        ready: function(){
+            console.log("Slider ready");
+        },
+        _mapBoundaries: function(percent){
+            //Update the currentValue based on the percent of the range 
+           this.value = Math.round((this.max - this.min)*percent/100)+this.min;
+        },
+        valueChanged:function(value){
+            console.log("new => " + value);
+        },
+        _moveSlider:function(e){
+            var elementPos = $(e.currentTarget).offset();
+            var posX = e.detail.x - elementPos.left;
+            if(posX >= 0 && posX <= $(e.currentTarget).outerWidth()){
+                $(this.$.switch).css('left', posX+'px');
+                this._mapBoundaries(Math.round((posX*100)/$(e.currentTarget).outerWidth()));
+            }
+        }
+        
+    });
+  </script>
+</dom-module>
