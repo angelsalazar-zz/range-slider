@@ -1,4 +1,3 @@
-
 <link rel="import" href="bower_components/polymer/polymer.html">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-rc1/jquery.min.js"></script>
 <dom-module id="range-slider">
@@ -39,7 +38,7 @@
         <div id="switch" class="switch"></div>
     </div>
     <div class="value-wrapper">
-        <label>Slider value: <span>{{currentValue}}</span></label>
+        <label>Slider value: <span>{{value}}</span></label>
     </div>
   </template>
 
@@ -60,71 +59,45 @@
                 value: 100,
             },
             //Current Value
-            currentValue: {
+            value: {
                 type: Number,
                 value: 0,
                 notify: true
-            },
-            disabled: {
-                type: Boolean,
-                value: false
-            },
-            _validRange:{
-                type: Boolean,
-                value: true
             }
         },
-        ready: function() {
-            //If boundaries are valid, then enable functionality
-            if(this._checkBoundaries() && !this._isDisabled()){
-                var self = this;                                     //Get object reference (Range-slider)
-                self._setInitialValue();                             //Set range slider min value
-                //Attach mousedown event to the slider
-                $(self.$.slider).on('mousedown',function(e){
-                    self._moveEvent(e);                              // move the slider when mouse is down
-                    //Attach drag event to the slider
-                    $(this).on('drag',function(e){
-                        self._moveEvent(e);                          //move the slider when mouse is dragged
-                    });
-                }).on('mouseup',function(e){                        //listen for mouseup event                    
-                    $(this).off('drag');                            //if mouse is up, then disable drag event
-                });
-            }else{//else show error
-                $(this.$.slider).css('border', '2px solid red');    
-            }
+        observers: [
+            'valueChanged(value)'
+        
+        ],
+        listeners: {
+          'slider.down': 'handleDown',
+          'slider.track': 'handleTrack',
         },
-        // Move event
-        _moveEvent: function(e){ 
-            var elementPosition = $(e.currentTarget).offset();          //Get elemet's offset from the window (left and top)
-            var posX = e.pageX - elementPosition.left;                  //Compute value of the range slider 
-                                                                        //e.pageX => cursor position
-                                                                        //elementPosition.left => left offset from the window
-            //Check boundaries, if bound, then move
-            if(posX >= 0 && posX <= $(e.currentTarget).outerWidth()){
-                $(this.$.switch).css('left', posX+'px');                //Move switch
-                //Map currentValue depending on the boundaries
-                this._mapBoundaries(Math.round((posX*100)/$(e.currentTarget).outerWidth()));
-            }
+        handleDown: function(e) {
+            this._moveSlider(e);
+        },
+        handleTrack: function(e){
+            this._moveSlider(e);
+        },
+        ready: function(){
+            console.log("Slider ready");
         },
         _mapBoundaries: function(percent){
             //Update the currentValue based on the percent of the range 
-           this.currentValue = Math.round((this.max - this.min)*percent/100)+this.min;
-           //this.$.svg.updateRadius(); 
+           this.value = Math.round((this.max - this.min)*percent/100)+this.min;
         },
-        _checkBoundaries: function(){
-            if(this.max  > this.min)
-                return this._validRange;
-            return !this._validRange;
+        valueChanged:function(value){
+            console.log("new => " + value);
         },
-        _setInitialValue:function(){
-            this.currentValue = this.min;
-            $(this.$.switch).css('left', 0+'px');
-        },
-        _isDisabled:function(){
-            return (this.disabled);
+        _moveSlider:function(e){
+            var elementPos = $(e.currentTarget).offset();
+            var posX = e.detail.x - elementPos.left;
+            if(posX >= 0 && posX <= $(e.currentTarget).outerWidth()){
+                $(this.$.switch).css('left', posX+'px');
+                this._mapBoundaries(Math.round((posX*100)/$(e.currentTarget).outerWidth()));
+            }
         }
         
     });
   </script>
 </dom-module>
-
