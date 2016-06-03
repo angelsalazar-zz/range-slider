@@ -1,4 +1,5 @@
-<link rel="import" href="bower_components/polymer/polymer.html">
+<!--<link rel="import" href="bower_components/polymer/polymer.html">-->
+<link rel="import" href="../polymer/polymer.html">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-rc1/jquery.min.js"></script>
 <dom-module id="range-slider">
   <template>
@@ -58,29 +59,52 @@
                 type: Number,
                 value: 100,
             },
-            //Current Value
+            //curent value
             value: {
                 type: Number,
                 value: 0,
-                notify: true
+                notify: true            //if true, valueChanged is triggered
+            },
+            //Disabled
+            disabled:{
+                type: Boolean,
+                value: false
+            },
+            _validRange:{
+                type: Boolean,
+                value: true
+            },
+            _ready:{
+                type: Boolean,
+                value: false
             }
         },
+        //Defining observers
         observers: [
             'valueChanged(value)'
-        
         ],
+        //Defining events
         listeners: {
-          'slider.down': 'handleDown',
-          'slider.track': 'handleTrack',
+          'slider.down': 'handleDown',          //event that handles click event 
+          'slider.track': 'handleTrack',        //event that handles drag event
         },
+        //click callback
         handleDown: function(e) {
-            this._moveSlider(e);
+            this._moveSlider(e);                //move the switch to the position where the slider is clicked
         },
+        //drag callback
         handleTrack: function(e){
-            this._moveSlider(e);
+            this._moveSlider(e);                //mode the switch when this is dragged
         },
         ready: function(){
             console.log("Slider ready");
+            ////If boundaries are valid and is not disabled, then enable functionality
+            if(this._validBoundaries() && !(this._isDisabled())){
+                this._ready = true;
+            }else{// else funcionality off
+                this._ready = false;
+                $(this.$.slider).css('border', '2px solid red');
+            }
         },
         _mapBoundaries: function(percent){
             //Update the currentValue based on the percent of the range 
@@ -89,13 +113,33 @@
         valueChanged:function(value){
             console.log("new => " + value);
         },
+        //method to move the slider based on the cursor position
         _moveSlider:function(e){
-            var elementPos = $(e.currentTarget).offset();
-            var posX = e.detail.x - elementPos.left;
-            if(posX >= 0 && posX <= $(e.currentTarget).outerWidth()){
-                $(this.$.switch).css('left', posX+'px');
-                this._mapBoundaries(Math.round((posX*100)/$(e.currentTarget).outerWidth()));
+            //If the element is ready to use
+            if(this._isReady()){
+                var elementPos = $(e.currentTarget).offset();                           //Get elemet's offset from the window (left and top)
+                var posX = e.detail.x - elementPos.left;                                //Compute value of the range slider
+                                                                                        //e.detail.x => cursor position
+                                                                                        //elementPosition.left => left offset from the window
+                //Check boundaries, if bound, then move
+                if(posX >= 0 && posX <= $(e.currentTarget).outerWidth()){
+                    $(this.$.switch).css('left', posX+'px');                            //Move switch
+                    //Map value depending on the boundaries
+                    this._mapBoundaries(Math.round((posX*100)/$(e.currentTarget).outerWidth()));
+                }
             }
+            
+        },
+        _isDisabled:function(){
+            return (this.disabled);
+        },
+        _validBoundaries: function(){
+            if(this.max  > this.min)
+                return this._validRange;
+            return !this._validRange;
+        },
+        _isReady:function(){
+            return this._ready;
         }
         
     });

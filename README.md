@@ -36,3 +36,27 @@ $ polymer test
 ```
 
 Your application is already set up to be tested via [web-component-tester](https://github.com/Polymer/web-component-tester). Run `polymer test` to run your application's test suite locally.
+
+## How to attach custom events and use polymer gestures
+
+Reference
+[Events link](https://www.polymer-project.org/1.0/docs/devguide/events)
+[Polymer gestures link](https://www.polymer-project.org/1.0/docs/devguide/gesture-events)
+
+
+## Events supported
+
+down and track equivalent to click and drag
+
+```javascript
+var slider = this.$.slider;
+slider.addEventListener('down', function(){
+var currentValue = this.value;
+//do something
+});
+slider.addEventListener('track', function(){
+var currentValue = this.value;
+//do something
+});
+```
+
